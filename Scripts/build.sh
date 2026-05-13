@@ -19,10 +19,7 @@ mkdir -p "$APP_BUNDLE/Contents/Resources"
 # 3. Copy binary
 cp ".build/release/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/"
 
-# 4. Copy Python script
-cp "$PROJECT_DIR/Scripts/market_monitor.py" "$APP_BUNDLE/Contents/Resources/"
-
-# 5. Write Info.plist
+# 4. Write Info.plist
 cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

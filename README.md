@@ -4,7 +4,6 @@ A native macOS menu bar app that watches global markets and alerts you only when
 
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black)
 ![Swift](https://img.shields.io/badge/Swift-5.10-orange)
-![Python](https://img.shields.io/badge/Python-3.x-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## What it does
@@ -21,7 +20,7 @@ MarketMonitor lives in your menu bar as a **$** icon. It periodically checks sto
 - **Optional AI analysis** — enrich crash alerts with context from Gemini, OpenAI, or Anthropic
 - **Custom design system** — clean black/white/green/red aesthetic with monospaced data display
 - **Configurable check interval** — 5 to 60 minutes
-- **Zero external Swift dependencies** — pure SwiftUI + Foundation
+- **Zero dependencies** — pure Swift/SwiftUI, fetches data directly from Yahoo Finance
 
 ## Screenshot
 
@@ -52,19 +51,19 @@ MarketMonitor lives in your menu bar as a **$** icon. It periodically checks sto
 ## Architecture
 
 ```
-Swift (UI + orchestration)          Python (data)
-┌──────────────────────┐           ┌──────────────────┐
-│  AppDelegate         │──spawn──▶ │  market_monitor.py │
-│  PopoverView         │◀──JSON──  │  (yfinance)        │
-│  SettingsView        │           └──────────────────┘
-│  NotificationService │──POST──▶  Telegram / Slack / Discord
-│  LLMAnalyzer         │──POST──▶  Gemini / OpenAI / Anthropic
-└──────────────────────┘
+┌──────────────────────────┐
+│  AppDelegate             │
+│  PopoverView             │──GET──▶  Yahoo Finance Chart API
+│  SettingsView            │
+│  NotificationService     │──POST──▶  Telegram / Slack / Discord
+│  LLMAnalyzer             │──POST──▶  Gemini / OpenAI / Anthropic
+└──────────────────────────┘
 ```
 
-- **Swift** handles all UI, scheduling, notifications, and LLM calls
-- **Python** is called as a subprocess purely for market data fetching via [yfinance](https://github.com/ranaroussi/yfinance)
-- Shared config at `~/Library/Application Support/MarketMonitor/config.json`
+- **Pure Swift** — no Python, no subprocesses, no external dependencies
+- Market data fetched directly from Yahoo Finance's chart API via `URLSession`
+- All symbols fetched concurrently with structured `TaskGroup`
+- Config stored at `~/Library/Application Support/MarketMonitor/config.json`
 
 ## Getting started
 
@@ -72,12 +71,13 @@ Swift (UI + orchestration)          Python (data)
 
 - macOS 14 (Sonoma) or later
 - Swift 5.10+ (included with Xcode 15.3+)
-- Python 3 with yfinance: `pip3 install yfinance`
+
+That's it. No Python, no pip, no homebrew packages.
 
 ### Build and run
 
 ```bash
-git clone https://github.com/tcatao/MarketMonitor.git
+git clone https://github.com/thiagocatao/MarketMonitor.git
 cd MarketMonitor
 
 # Development
@@ -118,7 +118,7 @@ Everything is managed through the Settings window (click Settings in the popover
 
 - **Watchlist** — Add/remove symbols, set per-symbol daily/weekly thresholds, VIX panic levels, share counts
 - **Notifications** — Choose Telegram, Slack, or Discord. Enter credentials. Send a test notification.
-- **General** — Check interval, AI analysis provider + API key, Python path
+- **General** — Check interval, AI analysis provider + API key
 
 Config is stored as JSON at `~/Library/Application Support/MarketMonitor/config.json`.
 
@@ -146,10 +146,10 @@ MarketMonitor/
 │   ├── Design/
 │   │   └── DesignTokens.swift        # Theme colors, spacing, typography
 │   ├── Models/
-│   │   └── AppConfig.swift           # Codable config, alerts, market data
+│   │   └── AppConfig.swift           # Config, alerts, market data models
 │   ├── Services/
 │   │   ├── ConfigManager.swift       # Load/save config.json
-│   │   ├── MarketChecker.swift       # Python subprocess bridge
+│   │   ├── MarketChecker.swift       # Yahoo Finance API client
 │   │   ├── NotificationService.swift # Telegram, Slack, Discord
 │   │   └── LLMAnalyzer.swift         # Gemini, OpenAI, Anthropic
 │   └── Views/
@@ -157,9 +157,8 @@ MarketMonitor/
 │       ├── SettingsView.swift         # Settings window
 │       ├── WatchlistTab.swift         # Symbol management
 │       ├── NotificationsTab.swift     # Notification config
-│       └── GeneralTab.swift           # Interval, AI, Python path
+│       └── GeneralTab.swift           # Interval + AI settings
 └── Scripts/
-    ├── market_monitor.py             # yfinance data engine
     └── build.sh                      # .app bundle builder
 ```
 

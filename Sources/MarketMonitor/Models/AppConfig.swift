@@ -49,7 +49,6 @@ struct LLMConfig: Codable {
 
 struct GeneralConfig: Codable {
     var checkIntervalMinutes: Int
-    var pythonPath: String
 }
 
 struct AppConfig: Codable {
@@ -79,7 +78,7 @@ struct AppConfig: Codable {
             discord: .init(webhookUrl: "")
         ),
         llm: LLMConfig(enabled: false, provider: .gemini, apiKey: "", model: "gemini-2.0-flash"),
-        general: GeneralConfig(checkIntervalMinutes: 30, pythonPath: "/opt/homebrew/bin/python3")
+        general: GeneralConfig(checkIntervalMinutes: 30)
     )
 }
 
@@ -95,7 +94,7 @@ struct MarketAlert: Codable {
     var price: Double?
 }
 
-// MARK: - Market Data (per-symbol live data from Python)
+// MARK: - Market Data
 
 struct MarketDataItem: Codable, Identifiable {
     var id: String { symbol }
@@ -115,17 +114,11 @@ struct MarketDataItem: Codable, Identifiable {
 
 // MARK: - Check Result
 
-struct CheckResult: Codable {
+struct CheckResult {
     var timestamp: String
     var mode: String
     var alertCount: Int
     var alerts: [MarketAlert]
     var marketData: [MarketDataItem]
     var errors: [String]
-
-    enum CodingKeys: String, CodingKey {
-        case timestamp, mode, alerts, errors
-        case alertCount = "alert_count"
-        case marketData = "market_data"
-    }
 }

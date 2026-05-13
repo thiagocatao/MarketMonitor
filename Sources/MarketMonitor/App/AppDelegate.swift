@@ -102,37 +102,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         isChecking = true
         defer { isChecking = false }
 
-        do {
-            let result = try await MarketChecker.check(
-                pythonPath: configManager.config.general.pythonPath,
-                scriptPath: configManager.scriptPath,
-                configPath: configManager.configFileURL.path
-            )
+        let result = await MarketChecker.check(watchlist: configManager.config.watchlist)
 
-            lastCheckTime = result.timestamp
-            lastCheckDate = Date()
-            lastError = nil
-            marketData = result.marketData
+        lastCheckTime = result.timestamp
+        lastCheckDate = Date()
+        lastError = result.errors.isEmpty ? nil : result.errors.joined(separator: "; ")
+        marketData = result.marketData
 
-            let today = Calendar.current.startOfDay(for: Date())
-            alertedToday = alertedToday.filter { $0.value >= today }
+        let today = Calendar.current.startOfDay(for: Date())
+        alertedToday = alertedToday.filter { $0.value >= today }
 
-            activeAlerts = result.alerts
+        activeAlerts = result.alerts
 
-            if !result.alerts.isEmpty {
-                updateIcon(hasAlerts: true)
-                let newAlerts = result.alerts.filter { alertedToday[$0.symbol] == nil }
-                for alert in newAlerts {
-                    alertedToday[alert.symbol] = Date()
-                }
-                if !newAlerts.isEmpty {
-                    await sendNotifications(for: newAlerts)
-                }
-            } else {
-                updateIcon(hasAlerts: false)
+        if !result.alerts.isEmpty {
+            updateIcon(hasAlerts: true)
+            let newAlerts = result.alerts.filter { alertedToday[$0.symbol] == nil }
+            for alert in newAlerts {
+                alertedToday[alert.symbol] = Date()
             }
-        } catch {
-            lastError = error.localizedDescription
+            if !newAlerts.isEmpty {
+                await sendNotifications(for: newAlerts)
+            }
+        } else {
+            updateIcon(hasAlerts: false)
         }
     }
 

@@ -18,8 +18,6 @@ struct GeneralTab: View {
                     scheduleSection
                     Divider()
                     llmSection
-                    Divider()
-                    pythonSection
                 }
                 .padding(.horizontal, Theme.spaceXL)
                 .padding(.top, 20)
@@ -159,24 +157,4 @@ struct GeneralTab: View {
         }
     }
 
-    // MARK: - Python
-
-    private var pythonSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("PYTHON")
-                .font(.system(size: 10, weight: .semibold))
-                .tracking(1.4)
-                .foregroundColor(Theme.ink4)
-
-            HStack(spacing: 8) {
-                Text("Path")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(Theme.ink3)
-                    .frame(width: 60, alignment: .trailing)
-                TextField("/opt/homebrew/bin/python3", text: $configManager.config.general.pythonPath)
-                    .font(Theme.mono(size: 13))
-                    .textFieldStyle(.roundedBorder)
-            }
-        }
-    }
 }

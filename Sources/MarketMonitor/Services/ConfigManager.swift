@@ -5,27 +5,12 @@ final class ConfigManager: ObservableObject {
     @Published var config: AppConfig
 
     let configFileURL: URL
-    let scriptPath: String
 
     init() {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let appDir = appSupport.appendingPathComponent("MarketMonitor")
         try? FileManager.default.createDirectory(at: appDir, withIntermediateDirectories: true)
         configFileURL = appDir.appendingPathComponent("config.json")
-
-        // Script path: look in bundle first, then alongside executable, then in Scripts/
-        if let bundled = Bundle.main.url(forResource: "market_monitor", withExtension: "py") {
-            scriptPath = bundled.path
-        } else {
-            let execDir = Bundle.main.executableURL?.deletingLastPathComponent().path ?? "."
-            let candidates = [
-                "\(execDir)/Scripts/market_monitor.py",
-                "\(execDir)/../Scripts/market_monitor.py",
-                "\(execDir)/../../Scripts/market_monitor.py",
-            ]
-            scriptPath = candidates.first { FileManager.default.fileExists(atPath: $0) }
-                ?? "\(execDir)/Scripts/market_monitor.py"
-        }
 
         if let data = try? Data(contentsOf: configFileURL) {
             if let loaded = try? JSONDecoder().decode(AppConfig.self, from: data) {
