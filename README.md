@@ -22,31 +22,15 @@ MarketMonitor lives in your menu bar as a **$** icon. It periodically checks sto
 - **Configurable check interval** — 5 to 60 minutes
 - **Zero dependencies** — pure Swift/SwiftUI, fetches data directly from Yahoo Finance
 
-## Screenshot
+## Screenshots
 
-```
-┌─────────────────────────────────┐
-│  ● All clear                    │
-│  last check 2 min ago · next 28m│
-├─────────────────────────────────┤
-│  PORTFOLIO    DAY P/L    VIX    │
-│  $56,606      +$1,030    17.79  │
-├─────────────────────────────────┤
-│  All  Alerts  Indices  Futures  │
-├─────────────────────────────────┤
-│  INDICES          daily -4%     │
-│  ● ^GSPC  S&P 500    +0.58%    │
-│  ● ^IXIC  NASDAQ     +1.20%    │
-│  ● ^N225  Nikkei     +0.52%    │
-│                                 │
-│  HOLDINGS         daily -10%    │
-│  ● GOOGL  Alphabet   +3.94%    │
-│  ● NVDA   NVIDIA     +2.29%    │
-│  ● SHOP   Shopify    -4.45%    │
-├─────────────────────────────────┤
-│  [Check now]    Settings   Quit │
-└─────────────────────────────────┘
-```
+<p align="center">
+  <img src="Screenshots/popover.png" width="320" alt="Menu bar popover with live market data">
+  &nbsp;&nbsp;
+  <img src="Screenshots/watchlist.png" width="320" alt="Watchlist settings">
+  &nbsp;&nbsp;
+  <img src="Screenshots/notifications.png" width="320" alt="Notification settings">
+</p>
 
 ## Architecture
 
