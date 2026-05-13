@@ -66,13 +66,4 @@ enum Theme {
         return "\(sign)\(String(format: "%.2f", pct))%"
     }
 
-    static func formatMoney(_ amount: Double) -> String {
-        let sign = amount < 0 ? "−" : ""
-        let fmt = NumberFormatter()
-        fmt.numberStyle = .decimal
-        fmt.maximumFractionDigits = 0
-        fmt.groupingSeparator = ","
-        let str = fmt.string(from: NSNumber(value: abs(amount))) ?? "0"
-        return "\(sign)$\(str)"
-    }
 }

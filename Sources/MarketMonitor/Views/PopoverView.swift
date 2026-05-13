@@ -39,23 +39,6 @@ struct PopoverView: View {
     private var alertCount: Int { appDelegate.activeAlerts.count }
     private var data: [MarketDataItem] { appDelegate.marketData }
 
-    private var portfolioValue: Double {
-        data.filter { $0.category == .stock && $0.shares != nil && $0.price != nil }
-            .reduce(0) { $0 + Double($1.shares!) * $1.price! }
-    }
-
-    private var dayPL: Double {
-        data.filter { $0.category == .stock && $0.shares != nil && $0.price != nil && $0.dailyPct != nil }
-            .reduce(0) { total, item in
-                let prev = item.price! / (1 + item.dailyPct! / 100)
-                return total + Double(item.shares!) * (item.price! - prev)
-            }
-    }
-
-    private var vixItem: MarketDataItem? {
-        data.first { $0.category == .vix }
-    }
-
     private var titleText: String {
         if appDelegate.isChecking && data.isEmpty { return "Checking..." }
         if let _ = appDelegate.lastError, data.isEmpty { return "Check failed" }
@@ -85,7 +68,6 @@ struct PopoverView: View {
             if let firstAlert = appDelegate.activeAlerts.first {
                 alertBanner(firstAlert)
             }
-            summaryBand
             filterBar
             ScrollView {
                 VStack(spacing: 0) {
@@ -212,41 +194,6 @@ struct PopoverView: View {
             )
         )
         .overlay(alignment: .bottom) { Divider() }
-    }
-
-    // MARK: - Summary Band
-
-    private var summaryBand: some View {
-        HStack(spacing: 0) {
-            summaryCell(label: "PORTFOLIO", value: Theme.formatMoney(portfolioValue), isDown: dayPL < 0, sub: portfolioValue > 0 ? Theme.formatChange(dayPL / portfolioValue * 100) : nil)
-            Divider().frame(height: 36)
-            summaryCell(label: "DAY P/L", value: Theme.formatMoney(dayPL), isDown: dayPL < 0, sub: nil)
-            Divider().frame(height: 36)
-            summaryCell(label: "VIX", value: vixItem?.price.map { String(format: "%.1f", $0) } ?? "—", isDown: (vixItem?.dailyPct ?? 0) > 0, sub: vixItem?.dailyPct.map { Theme.formatChange($0) })
-        }
-        .overlay(alignment: .bottom) { Divider() }
-    }
-
-    private func summaryCell(label: String, value: String, isDown: Bool, sub: String?) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label)
-                .font(.system(size: 9.5, weight: .semibold))
-                .tracking(1.4)
-                .foregroundColor(Theme.ink4)
-            HStack(spacing: 4) {
-                Text(value)
-                    .font(Theme.mono(size: 15, weight: .medium))
-                    .foregroundColor(isDown ? Theme.down : Theme.ink)
-                if let sub {
-                    Text(sub)
-                        .font(.system(size: 11))
-                        .foregroundColor(Theme.ink4)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
     }
 
     // MARK: - Filter Bar
@@ -555,12 +502,6 @@ struct RowDetail: View {
                 detailCell("PANIC AT", value: item.panicLevel.map { String(format: "%.0f", $0) } ?? "—", isDown: false)
                 detailCell("HEADROOM", value: headroom, isDown: false)
             }
-        } else if item.shares != nil {
-            HStack(spacing: 16) {
-                detailCell("POSITION", value: positionValue, isDown: false)
-                detailCell("DAY P/L", value: dayPLValue, isDown: (item.dailyPct ?? 0) < 0)
-                detailCell("TRIGGER", value: item.dailyThreshold.map { String(format: "%.0f%%", $0) } ?? "—", isDown: item.isAlert)
-            }
         } else {
             HStack(spacing: 16) {
                 detailCell("TODAY", value: Theme.formatChange(item.dailyPct), isDown: (item.dailyPct ?? 0) < 0)
@@ -605,16 +546,6 @@ struct RowDetail: View {
         return String(format: "%.1f", panic - price)
     }
 
-    private var positionValue: String {
-        guard let price = item.price, let shares = item.shares else { return "—" }
-        return Theme.formatMoney(Double(shares) * price)
-    }
-
-    private var dayPLValue: String {
-        guard let price = item.price, let shares = item.shares, let pct = item.dailyPct else { return "—" }
-        let prev = price / (1 + pct / 100)
-        return Theme.formatMoney(Double(shares) * (price - prev))
-    }
 }
 
 // MARK: - Threshold Bar
